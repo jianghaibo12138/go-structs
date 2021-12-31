@@ -6,6 +6,10 @@ import (
 
 type Structs struct{}
 
+func New() *Structs {
+	return &Structs{}
+}
+
 func (s *Structs) Map(itf interface{}) map[string]interface{} {
 	// 当前函数只接收struct类型
 	v := reflect.ValueOf(itf)
