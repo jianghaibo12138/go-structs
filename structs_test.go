@@ -1,27 +1,31 @@
 package structs
 
-import "testing"
+import (
+	"testing"
+)
 
 type s struct {
-	F int64
-	G float32
-	H interface{}
+	F int64       `json:"f"`
+	G float32     `json:"g"`
+	H interface{} `json:"h"`
 }
 
 type NestStruct struct {
-	A string
-	B int
-	C float64
-	D bool
-	E s
+	A string  `json:"a"`
+	B int     `json:"b"`
+	C float64 `json:"c"`
+	D bool    `json:"d"`
+	E s       `json:"e"`
 }
 
-func TestMap(t *testing.T) {
+func TestStructs_Map(t *testing.T) {
+	type fields struct{}
+	f1 := fields{}
 	type args struct {
-		s interface{}
+		itf interface{}
 	}
 	c1 := args{
-		s: NestStruct{
+		itf: &NestStruct{
 			A: "A",
 			B: 1,
 			C: 1.1,
@@ -34,14 +38,18 @@ func TestMap(t *testing.T) {
 		},
 	}
 	tests := []struct {
-		name string
-		args args
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
 	}{
-		{name: "c1", args: c1},
+		{name: "c1", fields: f1, args: c1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Map(tt.args.s)
+			s := &Structs{}
+			got := s.Map(tt.args.itf)
+			t.Logf("%+v", got)
 		})
 	}
 }
