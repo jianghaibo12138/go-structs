@@ -75,11 +75,11 @@ func (s *Structs) Map(itf interface{}) map[string]interface{} {
 						m[fieldName] = vi.Interface()
 					}
 				}
-				break
+				continue
 			}
 			if vi.Kind() == reflect.Struct { // 内嵌结构体
 				q = append(q, vi.Interface())
-				break
+				continue
 			}
 			fieldName := tpy.Field(i).Name
 			if s.ignoreIndexOf(fieldName) == -1 {

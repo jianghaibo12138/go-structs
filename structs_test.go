@@ -29,7 +29,7 @@ type NestStruct2 struct {
 }
 
 func TestStructs_Map(t *testing.T) {
-	//f1 := New([]string{"A", "B"})
+	// f1 := New([]string{"A", "B"})
 	f1 := New(nil)
 	type args struct {
 		itf interface{}
