@@ -30,7 +30,7 @@ type NestStruct2 struct {
 
 func TestStructs_Map(t *testing.T) {
 	// f1 := New([]string{"A", "B"})
-	f1 := New(nil)
+	f1 := New(nil, nil)
 	type args struct {
 		itf interface{}
 	}
@@ -57,15 +57,15 @@ func TestStructs_Map(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := New(tt.fields.IgnoreFields)
+			s := New(tt.fields.IgnoreFields, nil)
 			got := s.Map(tt.args.itf)
 			t.Logf("%+v", got)
 		})
 	}
 }
 
-func TestStructs_Facade(t *testing.T) {
-	f1 := New([]string{"A"})
+func TestStructs_StructCopy(t *testing.T) {
+	f1 := New([]string{"A"}, nil)
 	type args struct {
 		src interface{}
 		dst interface{}
@@ -98,10 +98,40 @@ func TestStructs_Facade(t *testing.T) {
 				IgnoreFields: tt.fields.IgnoreFields,
 				AliasFields:  tt.fields.AliasFields,
 			}
-			if err := s.Facade(tt.args.src, tt.args.dst); (err != nil) != tt.wantErr {
-				t.Errorf("Facade() error = %v, wantErr %v", err, tt.wantErr)
+			if err := s.StructCopy(tt.args.src, tt.args.dst); (err != nil) != tt.wantErr {
+				t.Errorf("StructCopy() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			fmt.Printf("%+v", tt.args.dst)
+		})
+	}
+}
+
+func TestStructs_MapCopy(t *testing.T) {
+	f1 := New(nil, []string{"B"})
+	type args struct {
+		src map[string]interface{}
+		dst map[string]interface{}
+	}
+	c1 := args{
+		src: map[string]interface{}{"A": "A", "B": "B"},
+		dst: make(map[string]interface{}),
+	}
+	tests := []struct {
+		name   string
+		fields *Structs
+		args   args
+	}{
+		{name: "c1", fields: f1, args: c1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Structs{
+				IgnoreFields: tt.fields.IgnoreFields,
+				WantedFields: tt.fields.WantedFields,
+				AliasFields:  tt.fields.AliasFields,
+			}
+			_ = s.MapCopy(tt.args.src, tt.args.dst)
+			t.Logf("%+v", tt.args.dst)
 		})
 	}
 }

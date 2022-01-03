@@ -14,23 +14,27 @@ import (
 //
 type Structs struct {
 	IgnoreFields []string
+	WantedFields []string
 	AliasFields  map[string]string
 }
 
 var (
 	// ErrMustBePtr 待操作结构体必须以指针类型传入
-	ErrMustBePtr = errors.New("src or dst must be ptr")
+	ErrMustBePtr            = errors.New("src or dst must be ptr")
+	ErrSrcOrDstMustNotBeNil = errors.New("src or dst must not be nil")
 )
 
 //
 // New
 // @Description: 实例化操作结构体
 // @param ignore 忽略的结构体字段
+// @param wanted 需要的字段, 为空是忽略
 // @return *Structs
 //
-func New(ignore []string) *Structs {
+func New(ignore []string, wanted []string) *Structs {
 	return &Structs{
 		IgnoreFields: ignore,
+		WantedFields: wanted,
 	}
 }
 
@@ -71,7 +75,7 @@ func (s *Structs) Map(itf interface{}) map[string]interface{} {
 					q = append(q, vi.Interface())
 				} else {
 					fieldName := tpy.Field(i).Name
-					if s.ignoreIndexOf(fieldName) == -1 {
+					if s.StringIndexOf(s.IgnoreFields, fieldName) == -1 {
 						m[fieldName] = vi.Interface()
 					}
 				}
@@ -82,7 +86,7 @@ func (s *Structs) Map(itf interface{}) map[string]interface{} {
 				continue
 			}
 			fieldName := tpy.Field(i).Name
-			if s.ignoreIndexOf(fieldName) == -1 {
+			if s.StringIndexOf(s.IgnoreFields, fieldName) == -1 {
 				m[fieldName] = vi.Interface()
 			}
 		}
@@ -91,14 +95,14 @@ func (s *Structs) Map(itf interface{}) map[string]interface{} {
 }
 
 //
-// Facade
+// StructCopy
 // @Description: 结构体之间相互赋值
 // @receiver s
 // @param src 取值用结构体
 // @param dst 赋值用结构体
 // @return error
 //
-func (s *Structs) Facade(src, dst interface{}) error {
+func (s *Structs) StructCopy(src, dst interface{}) error {
 	if reflect.ValueOf(src).Kind() != reflect.Ptr || reflect.ValueOf(dst).Kind() != reflect.Ptr {
 		return ErrMustBePtr
 	}
@@ -117,8 +121,33 @@ func (s *Structs) Facade(src, dst interface{}) error {
 	return nil
 }
 
-func (s *Structs) ignoreIndexOf(field string) int {
-	for idx, f := range s.IgnoreFields {
+//
+// MapCopy
+// @Description: 支持黑/白名单的map copy
+// @Document:
+// @receiver s
+// @param src
+// @return map[string]interface{}
+// @return error
+//
+func (s *Structs) MapCopy(src, dst map[string]interface{}) error {
+	if src == nil || dst == nil {
+		return ErrSrcOrDstMustNotBeNil
+	}
+	for key, val := range src {
+		if len(s.WantedFields) != 0 && s.StringIndexOf(s.WantedFields, key) == -1 {
+			continue
+		}
+		if len(s.IgnoreFields) != 0 && s.StringIndexOf(s.IgnoreFields, key) != -1 {
+			continue
+		}
+		dst[key] = val
+	}
+	return nil
+}
+
+func (s *Structs) StringIndexOf(lst []string, field string) int {
+	for idx, f := range lst {
 		if f == field {
 			return idx
 		}
