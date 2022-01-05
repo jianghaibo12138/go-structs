@@ -74,7 +74,7 @@ func (s *Structs) Map(itf interface{}) map[string]interface{} {
 				if vi.Kind() == reflect.Struct { // 结构体
 					q = append(q, vi.Interface())
 				} else {
-					fieldName := tpy.Field(i).Name
+					fieldName := tpy.Field(i).Tag.Get("json")
 					if s.StringIndexOf(s.IgnoreFields, fieldName) == -1 {
 						m[fieldName] = vi.Interface()
 					}
@@ -85,7 +85,7 @@ func (s *Structs) Map(itf interface{}) map[string]interface{} {
 				q = append(q, vi.Interface())
 				continue
 			}
-			fieldName := tpy.Field(i).Name
+			fieldName := tpy.Field(i).Tag.Get("json")
 			if s.StringIndexOf(s.IgnoreFields, fieldName) == -1 {
 				m[fieldName] = vi.Interface()
 			}
